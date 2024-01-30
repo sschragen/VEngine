@@ -13,10 +13,14 @@ namespace NaiveSurfaceNets
 	{
 		public float3 position;
 		public float3 normal;
+		public float3 tangent;
 
 		public static readonly VertexAttributeDescriptor[] VertexFormat =
-		{new VertexAttributeDescriptor(VertexAttribute.Position, VertexAttributeFormat.Float32),
-		 new VertexAttributeDescriptor(VertexAttribute.Normal, VertexAttributeFormat.Float32)};
+		{
+			new VertexAttributeDescriptor(VertexAttribute.Position, VertexAttributeFormat.Float32),
+			new VertexAttributeDescriptor(VertexAttribute.Normal, VertexAttributeFormat.Float32),
+            new VertexAttributeDescriptor(VertexAttribute.Tangent, VertexAttributeFormat.Float32),
+        };
 	}
 
 	public class Mesher : IDisposable

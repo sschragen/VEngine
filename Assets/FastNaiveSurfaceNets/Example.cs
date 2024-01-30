@@ -12,11 +12,10 @@ using WireframeImageEffect = SuperSystems.ImageEffects.WireframeImageEffect;
 
 namespace NaiveSurfaceNets
 {
-	public class Example : MonoBehaviour
+    [ExecuteInEditMode]
+    public class Example : MonoBehaviour
 	{
 		private bool regenerateOnce = true;
-		private GenerateJob.Mode generateModePrev;
-		public GenerateJob.Mode generateMode;
 		public Mesher.NormalCalculationMode normalCalculationMode;
 		
 		public bool regenerateChunk = false;
@@ -35,8 +34,6 @@ namespace NaiveSurfaceNets
 		TimeCounter chunkRegenCounter = new TimeCounter();
 
 		static Material lineMaterial;
-
-
 
 		void OnGUI()
 		{
@@ -75,11 +72,6 @@ namespace NaiveSurfaceNets
 		}
 		void GUIToggles()
 		{
-			generateMode = GUILayout.Toggle(generateMode == GenerateJob.Mode.SingleSphere, "Single sphere") ? GenerateJob.Mode.SingleSphere : generateMode;
-			generateMode = GUILayout.Toggle(generateMode == GenerateJob.Mode.Noise, "Noise") ? GenerateJob.Mode.Noise : generateMode;
-			generateMode = GUILayout.Toggle(generateMode == GenerateJob.Mode.Sphereblob, "Sphereblobs") ? GenerateJob.Mode.Sphereblob : generateMode;
-			generateMode = GUILayout.Toggle(generateMode == GenerateJob.Mode.Terrain, "Terrain") ? GenerateJob.Mode.Terrain : generateMode;
-
 			GUILayout.Space(10);
 			normalCalculationMode = GUILayout.Toggle(normalCalculationMode == Mesher.NormalCalculationMode.FromSDF, "SDF normals") ? Mesher.NormalCalculationMode.FromSDF : normalCalculationMode;
 			normalCalculationMode = GUILayout.Toggle(normalCalculationMode == Mesher.NormalCalculationMode.Recalculate, "Recalculate normals") ? Mesher.NormalCalculationMode.Recalculate : normalCalculationMode;
@@ -90,8 +82,8 @@ namespace NaiveSurfaceNets
 			if (chunkGameObject != null)
 			{
 				chunkMeshFilter = chunkGameObject.GetComponent<MeshFilter>();
-				if (chunkMeshFilter.mesh == null)
-					chunkMeshFilter.mesh = new Mesh();
+				if (chunkMeshFilter.sharedMesh == null)
+					chunkMeshFilter.sharedMesh = new Mesh();
 			}
 
 			chunk = new Chunk();
@@ -105,40 +97,17 @@ namespace NaiveSurfaceNets
 			generateJob = new GenerateJob
 			{
 				volume = chunk.data,
-
-				sphereCenter = new float3(15.5f, 15.5f, 15.5f),
-				noiseFreq = 0.07f,
-				spheresPositions = new NativeArray<float3>(50, Allocator.Persistent),
-				spheresDeltas = new NativeArray<float4>(50, Allocator.Persistent)
+				material = chunk.material
 			};
-
-			for (int i = 0; i < generateJob.spheresPositions.Length; i++)
-			{
-				generateJob.spheresPositions[i] = new float3
-				{
-					x = UnityEngine.Random.value * (Chunk.ChunkSize - 10) + 5,
-					y = UnityEngine.Random.value * (Chunk.ChunkSize - 10) + 5,
-					z = UnityEngine.Random.value * (Chunk.ChunkSize - 10) + 5,
-				};
-			}
 		}
 
 		void Update()
 		{
-			if (generateMode != generateModePrev)
-			{
-				generateModePrev = generateMode;
-				regenerateOnce = true;
-			}
-
 			if (regenerateChunk || regenerateOnce)
 			{
 				regenerateOnce = false;
 				chunkRegenCounter.Start();
 				generateJob.time += Time.deltaTime * noiseSpeed;
-				generateJob.mode = generateMode;
-				if (generateMode == GenerateJob.Mode.Sphereblob)
-					generateJob.Run();
 				generateJob.Schedule(32, 1).Complete();
 				chunkRegenCounter.Stop();
 			}
@@ -149,7 +118,7 @@ namespace NaiveSurfaceNets
 			meshingCounter.Stop();
 
 			uploadingCounter.Start();
-			chunkMeshFilter.mesh.SetMesh(mesher);
+			chunkMeshFilter.sharedMesh.SetMesh(mesher,true);
 			uploadingCounter.Stop();
 		}
 
@@ -194,8 +163,6 @@ namespace NaiveSurfaceNets
 		{
 			chunk.Dispose();
 			mesher.Dispose();
-			generateJob.spheresPositions.Dispose();
-			generateJob.spheresDeltas.Dispose();
 		}
 	}
 }

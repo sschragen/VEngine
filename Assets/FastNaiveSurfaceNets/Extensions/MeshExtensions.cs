@@ -48,6 +48,7 @@ public static class MeshExtensions
 
 			mesh.SetIndexBufferData(indices, 0, 0, indices.Length, updateFlags);
 			mesh.SetVertexBufferData(vertices, 0, 0, vertices.Length, 0, updateFlags);
+			
 			mesh.bounds = mesher.Bounds;
 		}
 		else

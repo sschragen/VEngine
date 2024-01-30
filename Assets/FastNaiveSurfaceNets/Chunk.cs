@@ -13,15 +13,18 @@ namespace NaiveSurfaceNets
 		public const int zShift = 0;
 
 		public NativeArray<sbyte> data;
+		public NativeArray<byte> material; 
 
 		public Chunk()
 		{
 			data = new NativeArray<sbyte>(ChunkSize * ChunkSize * ChunkSize, Allocator.Persistent, NativeArrayOptions.ClearMemory);
-		}
+			material = new NativeArray<byte>(ChunkSize * ChunkSize * ChunkSize, Allocator.Persistent, NativeArrayOptions.ClearMemory);
+        }
 
 		public void Dispose()
 		{
 			data.Dispose();
+			material.Dispose();
 		}
 	}
 }
